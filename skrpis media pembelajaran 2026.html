@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DysCare - Bantu Belajar Disleksia, Disgrafia & Diskalkulia</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Konfigurasi Tema Warna Kustom Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#4E65C6',
+                            bluehover: '#3a4e9e', // Biru lebih gelap untuk efek hover
+                            yellow: '#EAB642',
+                            yellowhover: '#d4a43b', // Kuning lebih gelap untuk efek hover
+                            white: '#fffdfe'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- IMPORT FONT HARUS DI PALING ATAS --- */
+        @import url('https://fonts.cdnfonts.com/css/opendyslexic');
+
+        /* --- CORE STYLES --- */
+        body { 
+            font-family: 'Poppins', sans-serif;
+            touch-action: manipulation;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Watermark UNESA Logo */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Logo_Unesa.svg/1200px-Logo_Unesa.svg.png');
+            background-repeat: no-repeat;
+            background-position: center 100px;
+            background-size: 30%;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: -1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        body::after {
+            content: '© 2025 A5ESA - M. Alwan Farhan';
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.05);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* --- ANIMATED BACKGROUND --- */
+        #animated-bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        #animated-bg-container span {
+            position: absolute;
+            display: block;
+            font-size: 3rem; 
+            font-weight: 900; 
+            opacity: 0.2; /* Slightly visible but soft */
+            animation: floatUp 15s linear infinite;
+            bottom: -100px; /* Start below screen */
+        }
+        
+        #animated-bg-container span:nth-child(1) { left: 10%; animation-delay: 0s; font-size: 4rem; }
+        #animated-bg-container span:nth-child(2) { left: 20%; animation-delay: 2s; }
+        #animated-bg-container span:nth-child(3) { left: 35%; animation-delay: 4s; font-size: 3.5rem; }
+        #animated-bg-container span:nth-child(4) { left: 50%; animation-delay: 0s; }
+        #animated-bg-container span:nth-child(5) { left: 65%; animation-delay: 6s; font-size: 4rem; }
+        #animated-bg-container span:nth-child(6) { left: 80%; animation-delay: 3s; }
+        #animated-bg-container span:nth-child(7) { left: 90%; animation-delay: 1s; font-size: 3.5rem; }
+        #animated-bg-container span:nth-child(8) { left: 5%; animation-delay: 7s; }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.2; }
+            90% { opacity: 0.2; }
+            100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- UI COMPONENTS --- */
+        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .card-hover:active { transform: translateY(-2px); }
+
+        .main-button { transition: transform 0.1s, background-color 0.2s; }
+        .main-button:active { transform: scale(0.95); }
+
+        .feedback-animation { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4E65C6;
+            border-radius: 50%;
+            width: 30px; height: 30px;
+            animation: spin 1s linear infinite; margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- FEATURE SPECIFIC --- */
+        .letter-tile {
+            width: 3.5rem; height: 3.5rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: bold;
+            border-radius: 0.5rem; background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer; transition: all 0.2s; user-select: none;
+        }
+        .letter-tile:active { transform: scale(0.9); background-color: #e2e8f0; }
+
+        .spelling-image-placeholder {
+            width: 150px; height: 150px;
+            border: 2px dashed #cbd5e1; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            background-color: #f1f5f9; margin: 0 auto 1rem auto; overflow: hidden; 
+        }
+        .spelling-image-placeholder img { width: 100%; height: 100%; object-fit: cover; }
+
+        .math-visual {
+            border: 2px solid #cbd5e1; background-color: #f8fafc;
+            padding: 0.5rem 1rem; border-radius: 12px;
+            display: inline-block; font-size: 2.5rem; min-width: 80px; text-align: center;
+        }
+
+        /* --- WRITING CANVAS & HOLLOW TEXT --- */
+        #writing-canvas {
+            touch-action: none; 
+            background-color: transparent;
+            cursor: crosshair;
+            position: relative;
+            z-index: 10;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%; max-width: 300px; height: 300px;
+            margin: 0 auto;
+            background-color: #fff;
+            border: 3px dashed #cbd5e1;
+            border-radius: 20px;
+            overflow: hidden;
+            background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 100% 50px;
+        }
+        .trace-guide {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 250px;
+            
+            /* HOLLOW TEXT EFFECT */
+            color: transparent; 
+            -webkit-text-stroke: 3px #cbd5e1; /* Light gray outline */
+            
+            pointer-events: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 900; 
+            z-index: 0;
+        }
+
+        /* --- ACCESSIBILITY PANEL --- */
+        #accessibility-panel::-webkit-scrollbar { width: 8px; }
+        #accessibility-panel::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        #accessibility-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        #accessibility-panel::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; }
+        input[type=range]:focus { outline: none; }
+        
+        .range-slider { height: 6px; border-radius: 4px; background-color: #e5e7eb; outline: none; }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 20px; height: 20px; border-radius: 50%;
+            cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .slider-blue::-webkit-slider-thumb { background: #4E65C6; } 
+        .slider-purple::-webkit-slider-thumb { background: #a855f7; } 
+        .slider-pink::-webkit-slider-thumb { background: #db2777; } 
+
+        /* --- FONTS & MODES --- */
+        @font-face {
+            font-family: 'TrikaIndoDyslexic';
+            src: local('TrikaIndoDyslexic'), local('TrikaIndo Dyslexic'), url('TrikaIndoDyslexic.ttf') format('truetype');
+        }
+
+        /* 1. Terapkan Font ke Semua Elemen */
+        body.dyslexia-mode-opendyslexic, body.dyslexia-mode-opendyslexic * {
+            font-family: 'OpenDyslexic', sans-serif !important;
+            letter-spacing: 0.05em !important; 
+            word-spacing: 0.15em !important; 
+            line-height: 1.8 !important;
+        }
+
+        /* 2. Override Latar Belakang menjadi Krem Lembut */
+        body.dyslexia-mode-opendyslexic, 
+        body.dyslexia-mode-opendyslexic .bg-white,
+        body.dyslexia-mode-opendyslexic .bg-brand-white,
+        body.dyslexia-mode-opendyslexic .bg-gray-50 { 
+            background-color: #FDF6E3 !important; 
+        }
+
+        /* 3. Override Teks menjadi Biru Gelap sesuai gambar */
+        body.dyslexia-mode-opendyslexic,
+        body.dyslexia-mode-opendyslexic .text-gray-800,
+        body.dyslexia-mode-opendyslexic .text-gray-700,
+        body.dyslexia-mode-opendyslexic .text-gray-600,
+        body.dyslexia-mode-opendyslexic .text-gray-500,
+        body.dyslexia-mode-opendyslexic .text-gray-400,
+        body.dyslexia-mode-opendyslexic h1,
+        body.dyslexia-mode-opendyslexic h2,
+        body.dyslexia-mode-opendyslexic h3 {
+            color: #00479A !important; /* Biru khas OpenDyslexic Theme */
+        }
+
+        body.dyslexia-mode-trikaindo, body.dyslexia-mode-trikaindo * {
+            font-family: 'TrikaIndoDyslexic', 'Comic Sans MS', cursive !important;
+            letter-spacing: 0.08em !important; word-spacing: 0.2em !important; line-height: 1.8 !important;
+        }
+        body.dyslexia-mode-trikaindo { background-color: #f8f4e3 !important; color: #111 !important; }
+
+        body.dyslexia-mode-comic, body.dyslexia-mode-comic * {
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive !important;
+            letter-spacing: 0.03em !important; line-height: 1.5 !important;
+        }
+        body.dyslexia-mode-comic { background-color: #f8f4e3 !important; color: #333 !important; }
+        
+        /* Font Exceptions */
+        body[class*="dyslexia-mode"] .fa, body[class*="dyslexia-mode"] .fas, 
+        body[class*="dyslexia-mode"] .fa-solid, body[class*="dyslexia-mode"] .fa-regular,
+        body[class*="dyslexia-mode"] .fa-brands { font-family: "Font Awesome 6 Free" !important; }
+        body[class*="dyslexia-mode"] .trace-guide { font-family: inherit !important; } 
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
+        .highlight-word { background-color: #fef08a; border-radius: 4px; padding: 0 2px; }
+    </style>
+</head>
+<body class="bg-brand-white text-gray-800 antialiased" style="font-size: 16px;">
+    
+    <!-- Background Animation: Angka & Huruf Warna-warni -->
+    <div id="animated-bg-container">
+        <span class="text-red-400">1</span>
+        <span class="text-blue-400">A</span>
+        <span class="text-green-400">2</span>
+        <span class="text-yellow-400">B</span>
+        <span class="text-purple-400">3</span>
+        <span class="text-pink-400">C</span>
+        <span class="text-indigo-400">4</span>
+        <span class="text-orange-400">D</span>
+    </div>
+
+    <div id="app" class="container mx-auto p-4 max-w-4xl min-h-screen flex flex-col justify-center relative z-10">
+
+        <!-- Header -->
+        <header id="app-header" class="hidden mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-lg border border-gray-200">
+            <button onclick="navigateTo('home-screen')" class="text-brand-blue hover:text-brand-bluehover font-bold text-lg flex items-center gap-2">
+                <i class="fa-solid fa-house"></i> Beranda
+            </button>
+            <div class="flex gap-3">
+                 <button onclick="toggleAccessibilityPanel()" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full text-gray-600 transition" title="Pengaturan Aksesibilitas">
+                    <i class="fa-solid fa-universal-access text-xl"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Accessibility Panel -->
+        <div id="accessibility-panel" class="hidden fixed top-20 right-4 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white w-80 z-50 transform transition-all duration-300 max-h-[85vh] overflow-y-auto">
+             <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-xl text-gray-700 tracking-tight">Aksesibilitas</h3>
+                <button onclick="toggleAccessibilityPanel()" class="text-gray-400 hover:text-gray-600 transition"><i class="fa-solid fa-times text-lg"></i></button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Dyslexia Friendly -->
+                <button id="btn-acc-font" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-brand-blue transition-all text-center">
+                    <span id="icon-acc-font" class="text-3xl mb-2 font-bold text-gray-600 font-sans tracking-tight">Df</span>
+                    <span class="text-xs font-bold text-gray-700">Font Disleksia</span>
+                </button>
+
+                <!-- Ukuran Teks -->
+                <button id="btn-acc-size" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-brand-blue transition-all text-center">
+                    <span id="icon-acc-size" class="text-2xl mb-2 text-gray-600"><i class="fa-solid fa-text-height"></i></span>
+                    <span class="text-xs font-bold text-gray-700">Ukuran Teks<br><span id="lbl-acc-size" class="font-normal text-[10px] text-gray-500">Normal</span></span>
+                </button>
+
+                <!-- Kontras -->
+                <button id="btn-acc-contrast" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-brand-blue transition-all text-center">
+                    <span id="icon-acc-contrast" class="text-2xl mb-2 text-gray-600"><i class="fa-solid fa-circle-half-stroke"></i></span>
+                    <span class="text-xs font-bold text-gray-700">Kontras<br><span id="lbl-acc-contrast" class="font-normal text-[10px] text-gray-500">Normal</span></span>
+                </button>
+
+                <!-- Kecerahan -->
+                <button id="btn-acc-brightness" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-brand-blue transition-all text-center">
+                    <span id="icon-acc-bright" class="text-2xl mb-2 text-gray-600"><i class="fa-solid fa-sun"></i></span>
+                    <span class="text-xs font-bold text-gray-700">Kecerahan<br><span id="lbl-acc-bright" class="font-normal text-[10px] text-gray-500">Normal</span></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= SCREENS ================= -->
+
+        <!-- 1. Home Screen -->
+        <div id="home-screen" class="screen-content text-center animate-fade-in relative">
+            
+            <div class="absolute top-0 right-0 flex gap-3 z-20">
+                <button onclick="navigateTo('user-guide-screen')" class="bg-white p-3 rounded-full shadow-lg text-brand-blue hover:text-brand-bluehover hover:bg-blue-50 transition border border-blue-100 group" title="Panduan & Info">
+                    <i class="fa-solid fa-circle-info text-2xl group-hover:scale-110 transition-transform"></i>
+                </button>
+                <button onclick="toggleAccessibilityPanel()" class="bg-white p-3 rounded-full shadow-lg text-brand-yellow hover:text-brand-yellowhover hover:bg-yellow-50 transition border border-yellow-100 group" title="Aksesibilitas">
+                    <i class="fa-solid fa-universal-access text-2xl group-hover:scale-110 transition-transform"></i>
+                </button>
+            </div>
+
+            <div class="mb-10 pt-4">
+                <h1 class="text-5xl font-bold text-brand-blue mb-2 tracking-tight drop-shadow-sm">DysCare</h1>
+                <p class="text-gray-500 text-lg">Solusi Disleksia, Disgrafia & Diskalkulia</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                <!-- Reading Card -->
+                <div onclick="navigateTo('reading-screen')" class="card-hover bg-white p-6 rounded-3xl shadow-md border-b-4 border-blue-200 cursor-pointer flex flex-col items-center justify-center h-48 group">
+                    <div class="bg-blue-100 p-4 rounded-full mb-4 group-hover:bg-blue-200 transition">
+                        <i class="fa-solid fa-book-open text-4xl text-brand-blue"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-700">Membaca</h2>
+                    <p class="text-sm text-gray-400 mt-1">Latihan Disleksia</p>
+                </div>
+
+                <!-- Writing Card -->
+                <div onclick="navigateTo('writing-screen')" class="card-hover bg-white p-6 rounded-3xl shadow-md border-b-4 border-red-200 cursor-pointer flex flex-col items-center justify-center h-48 group">
+                    <div class="bg-red-100 p-4 rounded-full mb-4 group-hover:bg-red-200 transition">
+                        <i class="fa-solid fa-pen-nib text-4xl text-red-500"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-700">Menulis</h2>
+                    <p class="text-sm text-gray-400 mt-1">Latihan Disgrafia</p>
+                </div>
+
+                <!-- Spelling Card -->
+                <div onclick="navigateTo('spelling-screen')" class="card-hover bg-white p-6 rounded-3xl shadow-md border-b-4 border-green-200 cursor-pointer flex flex-col items-center justify-center h-48 group">
+                    <div class="bg-green-100 p-4 rounded-full mb-4 group-hover:bg-green-200 transition">
+                        <i class="fa-solid fa-shapes text-4xl text-green-500"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-700">Mengeja</h2>
+                    <p class="text-sm text-gray-400 mt-1">Susun Kata</p>
+                </div>
+
+                <!-- Math Card -->
+                <div onclick="navigateTo('math-screen')" class="card-hover bg-white p-6 rounded-3xl shadow-md border-b-4 border-purple-200 cursor-pointer flex flex-col items-center justify-center h-48 group">
+                    <div class="bg-purple-100 p-4 rounded-full mb-4 group-hover:bg-purple-200 transition">
+                        <i class="fa-solid fa-calculator text-4xl text-purple-500"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-700">Berhitung</h2>
+                    <p class="text-sm text-gray-400 mt-1">Latihan Diskalkulia</p>
+                </div>
+
+                <!-- Progress & Profile Group -->
+                <div class="grid grid-cols-2 gap-4 col-span-1 md:col-span-2">
+                    <div onclick="navigateTo('progress-screen')" class="card-hover bg-white p-4 rounded-3xl shadow-md border-b-4 border-orange-200 cursor-pointer flex flex-col items-center justify-center group h-32">
+                        <div class="bg-orange-100 p-2 rounded-full mb-2 group-hover:bg-orange-200 transition">
+                             <i class="fa-solid fa-trophy text-xl text-orange-500"></i>
+                        </div>
+                        <h2 class="font-bold text-gray-700">Capaian</h2>
+                    </div>
+                     <div onclick="navigateTo('profile-screen')" class="card-hover bg-white p-4 rounded-3xl shadow-md border-b-4 border-pink-200 cursor-pointer flex flex-col items-center justify-center group h-32">
+                         <div class="bg-pink-100 p-2 rounded-full mb-2 group-hover:bg-pink-200 transition">
+                             <i class="fa-solid fa-user-circle text-xl text-pink-500"></i>
+                        </div>
+                        <h2 class="font-bold text-gray-700">Profil</h2>
+                    </div>
+                </div>
+            </div>
+            <!-- Bottom Button Removed -->
+        </div>
+
+        <!-- 2. Reading Screen -->
+        <div id="reading-screen" class="screen-content hidden bg-white rounded-3xl shadow-xl p-8 min-h-[500px] flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-brand-blue"><i class="fa-solid fa-book-open mr-2"></i> Membaca (Disleksia)</h2>
+                <div class="bg-blue-50 text-brand-blue px-3 py-1 rounded-full text-sm font-semibold">Skor: <span id="reading-score">0</span></div>
+            </div>
+            <div class="flex-grow flex flex-col items-center justify-center">
+                <div id="reading-content" class="text-2xl md:text-3xl text-center leading-relaxed mb-8 font-medium text-gray-700 transition-all p-4 rounded-xl">Menunggu materi...</div>
+                <div id="reading-controls" class="flex flex-wrap justify-center gap-4 w-full">
+                    <button id="btn-listen" class="main-button bg-blue-100 hover:bg-blue-200 text-brand-blue px-6 py-3 rounded-xl font-bold flex items-center gap-2"><i class="fa-solid fa-volume-high"></i> Dengar</button>
+                    <button id="btn-speak" class="main-button bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-green-200"><i class="fa-solid fa-microphone"></i> Baca (Rekam)</button>
+                    <button id="btn-next-reading" class="main-button bg-gray-100 hover:bg-gray-200 text-gray-600 px-6 py-3 rounded-xl font-bold flex items-center gap-2">Buat Cerita Ajaib <i class="fa-solid fa-wand-magic-sparkles ml-1"></i></button>
+                </div>
+                 <div id="reading-feedback" class="mt-6 h-8 text-lg font-semibold text-center text-gray-500"></div>
+            </div>
+        </div>
+
+        <!-- 3. Writing Screen -->
+        <div id="writing-screen" class="screen-content hidden bg-white rounded-3xl shadow-xl p-8 min-h-[500px] flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-red-600"><i class="fa-solid fa-pen-nib mr-2"></i> Menulis (Disgrafia)</h2>
+                <div class="bg-red-50 text-red-600 px-3 py-1 rounded-full text-sm font-semibold">Latihan Motorik Halus</div>
+            </div>
+
+            <div class="flex-grow flex flex-col items-center">
+                <div class="flex bg-gray-100 p-1 rounded-xl mb-6 shadow-sm border border-gray-200">
+                    <button id="btn-mode-abjad" class="px-6 py-2 rounded-lg font-bold bg-white text-red-600 shadow-sm transition">Abjad (A-Z)</button>
+                    <button id="btn-mode-angka" class="px-6 py-2 rounded-lg font-bold text-gray-500 hover:text-gray-700 transition">Angka (1-10)</button>
+                </div>
+                <p class="text-gray-500 mb-4 text-center">Tebalkan atau tiru pola di bawah ini:</p>
+                
+                <div class="canvas-container shadow-inner mb-6">
+                    <div id="trace-guide" class="trace-guide">A</div>
+                    <canvas id="writing-canvas" width="300" height="300"></canvas>
+                </div>
+
+                <div class="flex gap-4">
+                    <button id="btn-undo-canvas" class="main-button bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-left"></i> Undo
+                    </button>
+                    <button id="btn-clear-canvas" class="main-button bg-red-100 hover:bg-red-200 text-red-600 px-6 py-3 rounded-xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-eraser"></i> Hapus
+                    </button>
+                    <button id="btn-next-letter" class="main-button bg-brand-blue hover:bg-brand-bluehover text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-200">
+                        Huruf Lanjut <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                    <button id="btn-check-writing" class="main-button bg-brand-yellow hover:bg-brand-yellowhover text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2">
+                        Cek Tulisan ✨
+                    </button>
+                </div>
+                <div id="writing-feedback" class="mt-4 p-3 bg-white rounded-xl shadow-sm border border-gray-200 text-center hidden"></div>
+            </div>
+        </div>
+
+        <!-- 4. Spelling Screen -->
+        <div id="spelling-screen" class="screen-content hidden bg-white rounded-3xl shadow-xl p-8 min-h-[500px] flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-green-600"><i class="fa-solid fa-shapes mr-2"></i> Mengeja (Visual)</h2>
+                <div class="bg-green-50 text-green-600 px-3 py-1 rounded-full text-sm font-semibold">Skor: <span id="spelling-score">0</span></div>
+            </div>
+            <div class="flex-grow flex flex-col items-center">
+                <div id="spelling-image-container" class="spelling-image-placeholder mb-6 relative group">
+                    <span class="text-gray-400 text-4xl"><i class="fa-regular fa-image"></i></span>
+                    <div id="image-loader" class="absolute inset-0 flex items-center justify-center bg-gray-50 hidden"><div class="loader border-t-green-500"></div></div>
+                </div>
+                
+                <div class="flex items-center gap-3 mb-4">
+                    <p class="text-gray-500 text-lg m-0">Susun huruf untuk kata:</p>
+                    <button id="btn-spell-listen" class="bg-blue-100 hover:bg-blue-200 text-brand-blue p-2 rounded-full transition w-10 h-10 flex items-center justify-center" title="Dengarkan Kata">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                </div>
+
+                <div id="spelling-drop-zone" class="flex gap-2 mb-8 min-h-[4rem] p-2 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 items-center justify-center flex-wrap w-full"></div>
+                <div id="letter-bank" class="flex gap-2 flex-wrap justify-center mb-8"></div>
+                <div id="spelling-feedback" class="h-12 flex items-center justify-center text-xl font-bold mb-4"></div>
+                <div class="flex gap-4">
+                     <button id="btn-check-spelling" class="main-button bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-green-200">Cek Jawaban</button>
+                    <button id="btn-next-spelling" class="main-button bg-gray-100 hover:bg-gray-200 text-gray-600 px-6 py-3 rounded-xl font-bold">Buat Gambar & Kata <i class="fa-solid fa-image ml-1"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Math Screen -->
+        <div id="math-screen" class="screen-content hidden bg-white rounded-3xl shadow-xl p-8 min-h-[500px] flex flex-col">
+             <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-purple-600"><i class="fa-solid fa-calculator mr-2"></i> Berhitung (Diskalkulia)</h2>
+                <div class="bg-purple-50 text-purple-600 px-3 py-1 rounded-full text-sm font-semibold">Skor: <span id="math-score">0</span></div>
+            </div>
+            <div class="flex-grow flex flex-col items-center justify-center">
+                <div id="math-problem-container" class="flex flex-col items-center gap-6 mb-8 w-full">
+                    <div class="flex items-center gap-4 text-3xl md:text-5xl font-bold text-gray-700 flex-wrap justify-center">
+                        <div id="math-visual-1" class="math-visual">🍎</div><span>+</span><div id="math-visual-2" class="math-visual">🍎</div><span>=</span>
+                        <div class="w-24 h-20 bg-gray-100 rounded-xl border-2 border-purple-200 flex items-center justify-center text-purple-600">?</div>
+                    </div>
+                    <p id="math-text-question" class="text-gray-500 text-lg">Berapa jumlah apel?</p>
+                    <button id="btn-math-story" class="mt-2 text-sm text-purple-600 hover:text-purple-800 underline bg-purple-50 px-3 py-1 rounded-full transition">
+                        ✨ Buat Soal Cerita
+                    </button>
+                </div>
+                <div id="math-options" class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-lg mb-8"></div>
+                <div id="math-feedback" class="h-10 text-xl font-bold text-center"></div>
+            </div>
+        </div>
+
+        <!-- 6. Progress Screen -->
+        <div id="progress-screen" class="screen-content hidden bg-white rounded-3xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-orange-500 mb-6 text-center"><i class="fa-solid fa-trophy mr-2"></i> Capaian Belajar</h2>
+            <div class="grid gap-6">
+                <div class="bg-blue-50 p-6 rounded-2xl">
+                    <div class="flex justify-between mb-2"><span class="font-bold text-brand-bluehover">Membaca</span><span id="prog-read-val" class="font-bold text-brand-bluehover">0 Poin</span></div>
+                    <div class="w-full bg-blue-200 rounded-full h-4"><div id="prog-bar-read" class="bg-brand-blue h-4 rounded-full transition-all duration-1000" style="width: 0%"></div></div>
+                </div>
+                 <div class="bg-green-50 p-6 rounded-2xl">
+                    <div class="flex justify-between mb-2"><span class="font-bold text-green-700">Mengeja</span><span id="prog-spell-val" class="font-bold text-green-700">0 Poin</span></div>
+                    <div class="w-full bg-green-200 rounded-full h-4"><div id="prog-bar-spell" class="bg-green-500 h-4 rounded-full transition-all duration-1000" style="width: 0%"></div></div>
+                </div>
+                 <div class="bg-purple-50 p-6 rounded-2xl">
+                    <div class="flex justify-between mb-2"><span class="font-bold text-purple-700">Berhitung</span><span id="prog-math-val" class="font-bold text-purple-700">0 Poin</span></div>
+                    <div class="w-full bg-purple-200 rounded-full h-4"><div id="prog-bar-math" class="bg-purple-500 h-4 rounded-full transition-all duration-1000" style="width: 0%"></div></div>
+                </div>
+            </div>
+            
+            <div id="ai-advice-container" class="mt-6 bg-yellow-50 p-4 rounded-xl border border-brand-yellow hidden">
+                <h4 class="font-bold text-brand-yellowhover mb-2">✨ Saran Cerdas AI:</h4>
+                <p id="ai-advice-text" class="text-sm text-gray-700 italic">Sedang menganalisis...</p>
+            </div>
+
+            <div class="mt-8 text-center flex justify-center gap-4">
+                 <button onclick="generateProgressAdvice()" class="bg-brand-yellow hover:bg-brand-yellowhover text-white font-bold px-4 py-2 rounded-lg transition shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb"></i> Saran Cerdas
+                 </button>
+                 <button onclick="resetProgressWithConfirmation()" class="text-red-400 hover:text-red-600 text-sm font-semibold border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition"><i class="fa-solid fa-trash mr-1"></i> Reset</button>
+            </div>
+        </div>
+
+        <!-- 7. Profile Screen -->
+        <div id="profile-screen" class="screen-content hidden bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center">
+            <div class="w-24 h-24 bg-pink-100 rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-user text-4xl text-pink-500"></i></div>
+            <h2 class="text-2xl font-bold text-gray-700 mb-6">Profil Saya</h2>
+            <div class="w-full max-w-md">
+                <label class="block text-gray-600 mb-2 font-semibold">Nama Panggilan</label>
+                <input id="profile-name-input" type="text" placeholder="Masukkan namamu..." class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300 mb-4 text-center text-lg">
+                <button id="save-profile-btn" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-pink-200 transition mb-4">Simpan Profil</button>
+                 <p id="profile-save-feedback" class="text-green-500 text-center hidden font-bold"><i class="fa-solid fa-check"></i> Tersimpan!</p>
+            </div>
+        </div>
+
+        <!-- 8. User Guide & Info Screen -->
+        <div id="user-guide-screen" class="screen-content hidden bg-white rounded-3xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-brand-blue mb-6 text-center">Informasi & Panduan</h2>
+            <div class="space-y-6 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
+                
+                <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 shadow-sm">
+                    <h3 class="text-xl font-bold text-indigo-800 mb-4 text-center border-b border-indigo-200 pb-2">Tentang DysCare</h3>
+
+                    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-brand-yellowhover p-4 rounded-r-lg" role="alert">
+                        <p class="font-bold">Attention!!</p>
+                        <p class="text-sm">Dengan semangat pendidikan inklusif, DysCare by A5NESA menggabungkan teknologi dan pedagogi untuk menciptakan pengalaman belajar yang adaptif bagi anak dengan disleksia. Aplikasi ini bukan hanya alat bantu, tetapi juga jembatan menuju pemahaman, kemandirian, dan kepercayaan diri dalam membaca.</p>
+                    </div>
+                </div>
+
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-6 text-center">Panduan Pengguna</h3>
+
+                <div class="mb-8">
+                    <h4 class="text-lg font-bold text-brand-blue mb-4 border-b-2 border-blue-100 pb-2"><i class="fa-solid fa-lightbulb mr-2"></i>Wawasan Fitur (Teknologi Inklusif)</h4>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li class="flex gap-3 items-start"><i class="fa-solid fa-check text-green-500 mt-1"></i> <div><strong>Pendekatan Multisensori:</strong> Anak belajar dengan melihat visual, mendengar audio (Text-to-Speech), dan menyentuh layar secara bersamaan untuk memperkuat memori otak.</div></li>
+                        <li class="flex gap-3 items-start"><i class="fa-solid fa-check text-green-500 mt-1"></i> <div><strong>Font OpenDyslexic:</strong> Huruf dirancang memiliki 'pemberat' di bagian bawah agar tidak terlihat berputar atau terbalik saat dibaca penderita disleksia.</div></li>
+                        <li class="flex gap-3 items-start"><i class="fa-solid fa-check text-green-500 mt-1"></i> <div><strong>Generatif AI:</strong> Menggunakan kecerdasan buatan untuk menciptakan materi pembelajaran yang tidak terbatas (soal cerita & kalimat baru) agar anak tidak bosan.</div></li>
+                        <li class="flex gap-3 items-start"><i class="fa-solid fa-check text-green-500 mt-1"></i> <div><strong>Asisten Suara Interaktif:</strong> Mampu merekam suara anak (Speech-to-Text) untuk mengevaluasi ketepatan membaca secara otomatis (Khusus browser yang mendukung).</div></li>
+                    </ul>
+                </div>
+
+                <div class="mb-8">
+                    <h4 class="text-lg font-bold text-brand-blue mb-4 border-b-2 border-blue-100 pb-2">Untuk Siapa Aplikasi Ini?</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                            <div class="text-center mb-2"><i class="fa-solid fa-child-reaching text-3xl text-green-500"></i></div>
+                            <h5 class="font-bold text-gray-800 text-center mb-2">Anak-Anak (5-10 Thn)</h5>
+                            <ul class="text-sm text-gray-600 list-disc list-inside space-y-1">
+                                <li>Kesulitan membaca (Disleksia), menulis (Disgrafia), atau berhitung (Diskalkulia).</li>
+                                <li>Membutuhkan cara belajar yang seru, visual, dan interaktif (audio & gambar).</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                            <div class="text-center mb-2"><i class="fa-solid fa-hands-holding-child text-3xl text-orange-500"></i></div>
+                            <h5 class="font-bold text-gray-800 text-center mb-2">Orang Tua</h5>
+                            <ul class="text-sm text-gray-600 list-disc list-inside space-y-1">
+                                <li>Ingin mendampingi anak belajar di rumah secara efektif.</li>
+                                <li>Perlu memantau perkembangan anak lewat dashboard progress.</li>
+                                <li>Mencari ide dan saran latihan yang dipersonalisasi.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                            <div class="text-center mb-2"><i class="fa-solid fa-chalkboard-user text-3xl text-purple-500"></i></div>
+                            <h5 class="font-bold text-gray-800 text-center mb-2">Guru & Terapis</h5>
+                            <ul class="text-sm text-gray-600 list-disc list-inside space-y-1">
+                                <li>Membutuhkan alat bantu ajar yang interaktif untuk di kelas.</li>
+                                <li>Ingin variasi soal dan cerita yang dibuat otomatis oleh AI.</li>
+                                <li>Sebagai media evaluasi dan intervensi belajar siswa.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-bold text-brand-blue mb-4 border-b-2 border-blue-100 pb-2">Tata Cara Penggunaan</h4>
+                    <p class="mb-4 text-gray-600">Pilih salah satu dari 4 menu utama (Membaca, Mengeja, Berhitung, Progress) di Halaman Utama.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex gap-4 items-start bg-blue-50 p-4 rounded-xl">
+                            <div class="bg-white p-2 rounded-lg shadow-sm text-brand-blue"><i class="fa-solid fa-book-open text-xl"></i></div>
+                            <div>
+                                <h5 class="font-bold text-gray-800">Membaca</h5>
+                                <p class="text-sm text-gray-600">Dengarkan cerita kalimat per kalimat dan ikuti sorotan kata. Gunakan tombol <strong>"Buat Cerita Ajaib"</strong> untuk mendapatkan cerita baru dari AI.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 items-start bg-red-50 p-4 rounded-xl">
+                            <div class="bg-white p-2 rounded-lg shadow-sm text-red-500"><i class="fa-solid fa-pen-nib text-xl"></i></div>
+                            <div>
+                                <h5 class="font-bold text-gray-800">Menulis</h5>
+                                <p class="text-sm text-gray-600">Gunakan jari atau kursor untuk menebalkan huruf di atas kanvas. Klik <strong>"Cek Tulisan ✨"</strong> agar AI menilai tulisanmu, atau <strong>"Hapus"</strong> untuk mengulang.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-4 items-start bg-green-50 p-4 rounded-xl">
+                            <div class="bg-white p-2 rounded-lg shadow-sm text-green-500"><i class="fa-solid fa-pencil text-xl"></i></div>
+                            <div>
+                                <h5 class="font-bold text-gray-800">Mengeja</h5>
+                                <p class="text-sm text-gray-600">Dengarkan suara atau lihat gambar, lalu susun huruf yang benar. Gunakan <strong>"Buat Gambar & Kata"</strong> untuk tantangan mengeja kata baru berdasarkan tema.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 items-start bg-purple-50 p-4 rounded-xl">
+                            <div class="bg-white p-2 rounded-lg shadow-sm text-purple-500"><i class="fa-solid fa-calculator text-xl"></i></div>
+                            <div>
+                                <h5 class="font-bold text-gray-800">Berhitung</h5>
+                                <p class="text-sm text-gray-600">Hitung gambar emoji dan pilih jawaban yang benar. Gunakan <strong>"Buat Soal Cerita"</strong> untuk mengubah soal angka menjadi soal cerita yang mudah dipahami.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 items-start bg-orange-50 p-4 rounded-xl">
+                            <div class="bg-white p-2 rounded-lg shadow-sm text-orange-500"><i class="fa-solid fa-chart-line text-xl"></i></div>
+                            <div>
+                                <h5 class="font-bold text-gray-800">Progress</h5>
+                                <p class="text-sm text-gray-600">Lihat kemajuan belajar anak pada ketiga area. Minta <strong>"Saran Cerdas"</strong> dari AI untuk rekomendasi latihan berikutnya.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modals -->
+    <div id="confirm-modal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center">
+            <div class="text-red-500 text-4xl mb-4"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Yakin reset data?</h3>
+            <p class="text-gray-500 mb-6 text-sm">Semua skor dan capaianmu akan hilang dan kembali ke nol.</p>
+            <div class="flex justify-center gap-3">
+                <button onclick="closeModal('confirm-modal')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold">Batal</button>
+                <button onclick="confirmResetProgress()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold">Ya, Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="info-modal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+         <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center animate-pop">
+            <div id="info-modal-icon" class="text-4xl mb-4 text-brand-blue"><i class="fa-solid fa-info-circle"></i></div>
+            <h3 id="info-modal-title" class="text-xl font-bold text-gray-800 mb-2">Info</h3>
+            <p id="info-modal-message" class="text-gray-500 mb-6 text-sm">Pesan informasi.</p>
+            <button onclick="closeModal('info-modal')" class="bg-brand-blue hover:bg-brand-bluehover text-white px-6 py-2 rounded-lg font-semibold">Oke</button>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           KONFIGURASI API & STATE APLIKASI
+           ========================================================================== */
+        
+        const API_KEY = ""; // Environment provides the key at runtime
+        const TEXT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+        const IMAGE_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${API_KEY}`;
+        const VISION_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+
+        // AppState: Menyimpan seluruh status dan data lokal aplikasi
+        const appState = {
+            currentScreen: 'home-screen',
+            isDyslexicMode: false,
+            dyslexicFontType: 'opendyslexic',
+            progress: { reading: 0, spelling: 0, math: 0 },
+            reading: { 
+                sentences: ["kucing itu lucu", "Teguh belum mandi", "ibu masak nasi", "ayah baca koran", "bunga mawar harum"], 
+                currentSentence: "", 
+                isListening: false 
+            },
+            spelling: {
+                words: [
+                    { word: "apel", imagePrompt: "sebuah apel merah segar kartun", fallbackEmoji: "🍎" },
+                    { word: "buku", imagePrompt: "sebuah buku tertutup kartun warna biru", fallbackEmoji: "📘" },
+                    { word: "ikan", imagePrompt: "seekor ikan oranye kartun berenang", fallbackEmoji: "🐟" },
+                    { word: "meja", imagePrompt: "sebuah meja kayu sederhana kartun", fallbackEmoji: "🪑" },
+                    { word: "susu", imagePrompt: "segelas susu putih segar kartun", fallbackEmoji: "🥛" }
+                ],
+                currentWordObj: null
+            },
+            math: {
+                problems: [
+                    { name: "apel", visual1: "🍎", visual2: "🍎", num1: 1, num2: 1, op: "+" },
+                    { name: "kucing", visual1: "🐱", visual2: "🐱", num1: 2, num2: 1, op: "+" },
+                    { name: "kue", visual1: "🍪", visual2: "🍪", num1: 1, num2: 2, op: "+" },
+                    { name: "balon", visual1: "🎈", visual2: "🎈", num1: 2, num2: 2, op: "+" }
+                ],
+                currentIndex: 0
+            },
+            writing: { 
+                alphabets: ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'], 
+                numbers: ['1','2','3','4','5','6','7','8','9','10'], 
+                currentMode: 'alphabets', 
+                currentIdx: 0 
+            }
+        };
+
+        /* ==========================================================================
+           FUNGSI NAVIGASI & UI DASAR
+           ========================================================================== */
+
+        function navigateTo(screenId) {
+            // Sembunyikan semua layar
+            document.querySelectorAll('.screen-content').forEach(el => el.classList.add('hidden'));
+            
+            // Tampilkan layar yang dituju
+            document.getElementById(screenId).classList.remove('hidden');
+            appState.currentScreen = screenId;
+            
+            // Atur visibilitas Header
+            const header = document.getElementById('app-header');
+            if (screenId === 'home-screen') {
+                header.classList.add('hidden');
+            } else {
+                header.classList.remove('hidden');
+            }
+            
+            // Inisialisasi data berdasarkan layar yang dibuka
+            if (screenId === 'reading-screen') loadReadingContent();
+            if (screenId === 'spelling-screen') loadSpellingContent();
+            if (screenId === 'math-screen') loadMathProblem();
+            if (screenId === 'writing-screen') setupWritingCanvas();
+            if (screenId === 'progress-screen') updateProgressUI();
+            if (screenId === 'profile-screen') loadProfileData();
+            
+            window.scrollTo(0, 0);
+        }
+
+        function toggleAccessibilityPanel() { 
+            document.getElementById('accessibility-panel').classList.toggle('hidden'); 
+        }
+
+        /* ==========================================================================
+           FUNGSI AKSESIBILITAS (DYSLEXIA FRIENDLY, SIZE, CONTRAST)
+           ========================================================================== */
+
+        function loadAccessibilitySettings() {
+            const body = document.body;
+            const html = document.documentElement; 
+            
+            const btnFont = document.getElementById('btn-acc-font');
+            const btnSize = document.getElementById('btn-acc-size');
+            const btnContrast = document.getElementById('btn-acc-contrast');
+            const btnBright = document.getElementById('btn-acc-brightness');
+
+            let fontActive = false;
+            
+            let sizeLevel = 0; 
+            const sizes = [16, 18, 20]; 
+            const sizeLabels = ['Normal', 'Besar', 'Ekstra'];
+            
+            let contrastLevel = 0; 
+            const contrasts = [1, 1.25, 1.5]; 
+            const contrastLabels = ['Normal', 'Tinggi', 'Maksimal'];
+            
+            let brightLevel = 0; 
+            const brights = [1, 1.3, 0.7]; 
+            const brightLabels = ['Normal', 'Terang', 'Redup'];
+
+            function updateUI(btn, isActive, iconId) {
+                const icon = document.getElementById(iconId);
+                if (isActive) {
+                    btn.classList.add('border-brand-blue', 'bg-blue-50');
+                    btn.classList.remove('border-gray-200', 'bg-white');
+                    if (icon) { 
+                        icon.classList.add('text-brand-blue'); 
+                        icon.classList.remove('text-gray-600'); 
+                    }
+                } else {
+                    btn.classList.remove('border-brand-blue', 'bg-blue-50');
+                    btn.classList.add('border-gray-200', 'bg-white');
+                    if (icon) { 
+                        icon.classList.remove('text-brand-blue'); 
+                        icon.classList.add('text-gray-600'); 
+                    }
+                }
+            }
+
+            // Listener Font Disleksia
+            btnFont.addEventListener('click', () => {
+                fontActive = !fontActive;
+                body.classList.toggle('dyslexia-mode-opendyslexic', fontActive);
+                updateUI(btnFont, fontActive, 'icon-acc-font');
+            });
+
+            // Listener Ukuran Teks
+            btnSize.addEventListener('click', () => {
+                sizeLevel = (sizeLevel + 1) % sizes.length;
+                html.style.fontSize = sizes[sizeLevel] + 'px';
+                document.getElementById('lbl-acc-size').innerText = sizeLabels[sizeLevel];
+                updateUI(btnSize, sizeLevel > 0, 'icon-acc-size');
+            });
+
+            // Listener Kontras & Kecerahan
+            const updateFilters = () => {
+                document.getElementById('app').style.filter = `contrast(${contrasts[contrastLevel]}) saturate(${brights[brightLevel]})`;
+            };
+
+            btnContrast.addEventListener('click', () => {
+                contrastLevel = (contrastLevel + 1) % contrasts.length;
+                document.getElementById('lbl-acc-contrast').innerText = contrastLabels[contrastLevel];
+                updateUI(btnContrast, contrastLevel > 0, 'icon-acc-contrast');
+                updateFilters();
+            });
+
+            btnBright.addEventListener('click', () => {
+                brightLevel = (brightLevel + 1) % brights.length;
+                document.getElementById('lbl-acc-bright').innerText = brightLabels[brightLevel];
+                updateUI(btnBright, brightLevel > 0, 'icon-acc-bright');
+                updateFilters();
+            });
+        }
+
+        /* ==========================================================================
+           FUNGSI PROGRESS & PROFILE (LOCAL STORAGE)
+           ========================================================================== */
+
+        function loadProgress() { 
+            const saved = localStorage.getItem('dyslexiaToolboxProgress'); 
+            if (saved) {
+                appState.progress = JSON.parse(saved); 
+            }
+            updateScoreDisplays(); 
+        }
+
+        function saveProgress() { 
+            localStorage.setItem('dyslexiaToolboxProgress', JSON.stringify(appState.progress)); 
+            updateScoreDisplays(); 
+        }
+
+        function updateScoreDisplays() {
+            const rScore = document.getElementById('reading-score'); 
+            const sScore = document.getElementById('spelling-score'); 
+            const mScore = document.getElementById('math-score');
+            
+            if (rScore) rScore.innerText = appState.progress.reading; 
+            if (sScore) sScore.innerText = appState.progress.spelling; 
+            if (mScore) mScore.innerText = appState.progress.math;
+        }
+
+        function updateProgressUI() {
+            const max = 100;
+            const updateBar = (idVal, idBar, val) => {
+                document.getElementById(idVal).innerText = val + " Poin";
+                document.getElementById(idBar).style.width = Math.min((val / max) * 100, 100) + "%";
+            };
+            updateBar('prog-read-val', 'prog-bar-read', appState.progress.reading);
+            updateBar('prog-spell-val', 'prog-bar-spell', appState.progress.spelling);
+            updateBar('prog-math-val', 'prog-bar-math', appState.progress.math);
+        }
+
+        function setupProgressInteractions() {
+            window.resetProgressWithConfirmation = () => document.getElementById('confirm-modal').classList.remove('hidden');
+            window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+            window.confirmResetProgress = () => { 
+                appState.progress = { reading: 0, spelling: 0, math: 0 }; 
+                saveProgress(); 
+                updateProgressUI(); 
+                closeModal('confirm-modal'); 
+                showInfoModal('Sukses', 'Progres telah direset.'); 
+            };
+        }
+
+        function showInfoModal(title, msg, iconClass = "fa-solid fa-info-circle") {
+            document.getElementById('info-modal-title').innerText = title; 
+            document.getElementById('info-modal-message').innerText = msg;
+            document.getElementById('info-modal-icon').innerHTML = `<i class="${iconClass}"></i>`; 
+            document.getElementById('info-modal').classList.remove('hidden');
+        }
+
+        function setupProfilePage() {
+            document.getElementById('save-profile-btn').addEventListener('click', () => {
+                const nameVal = document.getElementById('profile-name-input').value.trim();
+                localStorage.setItem('dyslexiaToolboxProfile', JSON.stringify({ name: nameVal }));
+                
+                const fb = document.getElementById('profile-save-feedback'); 
+                fb.classList.remove('hidden'); 
+                setTimeout(() => fb.classList.add('hidden'), 2000);
+            });
+        }
+
+        function loadProfileData() { 
+            const p = localStorage.getItem('dyslexiaToolboxProfile'); 
+            if (p) {
+                document.getElementById('profile-name-input').value = JSON.parse(p).name || ''; 
+            }
+        }
+
+        /* ==========================================================================
+           SFX ENGINE (EFEK SUARA GAMIFIKASI)
+           ========================================================================== */
+        
+        // Membangun suara secara native tanpa file audio eksternal
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            if (type === 'correct') {
+                // Suara "Ting-Ting" (Berhasil)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // Nada C5
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // Nada E5
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'wrong') {
+                // Suara "Bzzzt" (Salah)
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        /* ==========================================================================
+           HELPER API KECERDASAN BUATAN (AI GEMINI)
+           ========================================================================== */
+
+        async function generateAIContent(prompt) {
+            try {
+                const response = await fetch(TEXT_API_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) 
+                });
+                const data = await response.json(); 
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) { 
+                console.error("AI Error:", error); 
+                return null; 
+            }
+        }
+
+        async function generateMultimodalContent(prompt, base64Image) {
+            try {
+                const mimeType = "image/png"; 
+                const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg);base64,/, "");
+                
+                const response = await fetch(VISION_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                { inlineData: { mimeType: mimeType, data: cleanBase64 } }
+                            ]
+                        }]
+                    })
+                });
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error("AI Vision Error:", error);
+                return "Maaf, AI sedang sibuk. Coba lagi nanti.";
+            }
+        }
+
+        /* ==========================================================================
+           LOGIKA MODUL 1: MEMBACA (DISLEKSIA)
+           ========================================================================== */
+
+        async function loadReadingContent() {
+            const contentArea = document.getElementById('reading-content'); 
+            const feedbackArea = document.getElementById('reading-feedback');
+            
+            feedbackArea.innerHTML = "";
+            const useAI = Math.random() > 0.7; // 30% kemungkinan menggunakan AI
+            
+            if (useAI) {
+                contentArea.innerHTML = '<span class="text-gray-400 text-lg animate-pulse">🤖 Sedang membuat kalimat baru...</span>';
+                const prompt = "Buatkan satu kalimat pendek sederhana (maksimal 5 kata) bahasa Indonesia untuk latihan membaca anak SD kelas 1. Hanya kalimat saja tanpa tanda petik.";
+                const aiText = await generateAIContent(prompt);
+                
+                appState.reading.currentSentence = aiText ? aiText.trim() : appState.reading.sentences[Math.floor(Math.random() * appState.reading.sentences.length)];
+            } else {
+                 appState.reading.currentSentence = appState.reading.sentences[Math.floor(Math.random() * appState.reading.sentences.length)];
+            }
+            
+            // Split kalimat menjadi rentetan <span> untuk efek highlight/sorotan
+            contentArea.innerHTML = appState.reading.currentSentence.split(' ').map(w => `<span>${w}</span>`).join(' ');
+        }
+
+        function setupReading() {
+            const btnListen = document.getElementById('btn-listen');
+            const btnSpeak = document.getElementById('btn-speak'); 
+            const feedback = document.getElementById('reading-feedback');
+            const btnNext = document.getElementById('btn-next-reading');
+
+            // Text-to-Speech (Membacakan)
+            btnListen.addEventListener('click', () => { 
+                const u = new SpeechSynthesisUtterance(appState.reading.currentSentence); 
+                u.lang = 'id-ID'; 
+                u.rate = 0.8; 
+                window.speechSynthesis.speak(u); 
+            });
+            
+            // Speech-to-Text (Perekaman Suara Anak)
+            if ('webkitSpeechRecognition' in window) {
+                const r = new webkitSpeechRecognition(); 
+                r.lang = 'id-ID'; 
+                r.continuous = false;
+                
+                btnSpeak.addEventListener('click', () => { 
+                    if(appState.reading.isListening) return; 
+                    try { 
+                        r.start(); 
+                        btnSpeak.classList.add('bg-red-500', 'animate-pulse'); 
+                        btnSpeak.innerHTML = '<i class="fa-solid fa-stop"></i> Mendengarkan...'; 
+                        appState.reading.isListening = true; 
+                        feedback.innerHTML = "🎤 Silakan baca..."; 
+                    } catch(e) { console.error(e); } 
+                });
+                
+                r.onresult = (e) => {
+                    const transcript = e.results[0][0].transcript.toLowerCase(); 
+                    const target = appState.reading.currentSentence.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,""); 
+                    const cleanTranscript = transcript.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+                    
+                    if (cleanTranscript.includes(target) || target.includes(cleanTranscript)) { 
+                        playSound('correct');
+                        feedback.innerHTML = `<span class="text-green-500 feedback-animation"><i class="fa-solid fa-star"></i> Hebat! Benar.</span>`; 
+                        appState.progress.reading += 10; 
+                        saveProgress(); 
+                    } else { 
+                        playSound('wrong');
+                        feedback.innerHTML = `<span class="text-orange-500">Hampir! Kamu bilang: "${transcript}"</span>`; 
+                    }
+                };
+                
+                r.onend = () => { 
+                    btnSpeak.classList.remove('bg-red-500', 'animate-pulse'); 
+                    btnSpeak.classList.add('bg-green-500'); 
+                    btnSpeak.innerHTML = '<i class="fa-solid fa-microphone"></i> Baca (Rekam)'; 
+                    appState.reading.isListening = false; 
+                };
+            } else { 
+                btnSpeak.style.display = 'none'; 
+                feedback.innerText = "Browser ini tidak mendukung fitur perekaman suara."; 
+            }
+
+            btnNext.addEventListener('click', loadReadingContent);
+        }
+
+        /* ==========================================================================
+           LOGIKA MODUL 2: MENULIS (DISGRAFIA)
+           ========================================================================== */
+
+        async function checkWritingWithAI() {
+            const canvas = document.getElementById('writing-canvas');
+            const feedbackDiv = document.getElementById('writing-feedback');
+            const btn = document.getElementById('btn-check-writing');
+            
+            const currentArr = appState.writing[appState.writing.currentMode];
+            const targetChar = currentArr[appState.writing.currentIdx];
+
+            feedbackDiv.classList.remove('hidden');
+            feedbackDiv.innerHTML = '<span class="text-gray-500"><i class="fa-solid fa-spinner fa-spin"></i> AI sedang melihat tulisanmu...</span>';
+            btn.disabled = true;
+
+            const imageData = canvas.toDataURL("image/png");
+            const prompt = `Lihat gambar tulisan tangan ini. Anak sedang mencoba menulis huruf/angka "${targetChar}". Apakah tulisannya sudah terbaca? Berikan komentar super pendek (maksimal 10 kata) yang menyemangati dalam Bahasa Indonesia.`;
+
+            const feedback = await generateMultimodalContent(prompt, imageData);
+
+            if (feedback) {
+                feedbackDiv.innerHTML = `<span class="text-brand-blue font-bold">🤖 Kata AI:</span> "${feedback.trim()}"`;
+            } else {
+                feedbackDiv.innerHTML = '<span class="text-red-400">Gagal terhubung ke AI. Coba lagi ya!</span>';
+            }
+            btn.disabled = false;
+        }
+
+        function setupWritingCanvas() {
+            let canvas = document.getElementById('writing-canvas');
+            
+            // Hapus listener lama (mencegah bug penumpukan goresan saat keluar masuk menu)
+            const newCanvas = canvas.cloneNode(true);
+            canvas.parentNode.replaceChild(newCanvas, canvas);
+            canvas = newCanvas;
+
+            const ctx = canvas.getContext('2d');
+            const guide = document.getElementById('trace-guide');
+            const modeAbjadBtn = document.getElementById('btn-mode-abjad');
+            const modeAngkaBtn = document.getElementById('btn-mode-angka');
+            const nextBtn = document.getElementById('btn-next-letter');
+            let painting = false;
+
+            function updateGuideText() {
+                const arr = appState.writing[appState.writing.currentMode];
+                const char = arr[appState.writing.currentIdx];
+                guide.innerText = char;
+                guide.style.fontSize = (char === '10') ? '200px' : '250px'; 
+            }
+
+            function switchMode(mode) {
+                appState.writing.currentMode = mode;
+                appState.writing.currentIdx = 0;
+                
+                if (mode === 'alphabets') {
+                    modeAbjadBtn.classList.replace('text-gray-500', 'text-red-600');
+                    modeAbjadBtn.classList.add('bg-white', 'shadow-sm');
+                    modeAngkaBtn.classList.replace('text-red-600', 'text-gray-500');
+                    modeAngkaBtn.classList.remove('bg-white', 'shadow-sm');
+                    nextBtn.innerHTML = 'Huruf Lanjut <i class="fa-solid fa-arrow-right"></i>';
+                } else {
+                    modeAngkaBtn.classList.replace('text-gray-500', 'text-red-600');
+                    modeAngkaBtn.classList.add('bg-white', 'shadow-sm');
+                    modeAbjadBtn.classList.replace('text-red-600', 'text-gray-500');
+                    modeAbjadBtn.classList.remove('bg-white', 'shadow-sm');
+                    nextBtn.innerHTML = 'Angka Lanjut <i class="fa-solid fa-arrow-right"></i>';
+                }
+                
+                updateGuideText();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                document.getElementById('writing-feedback').classList.add('hidden');
+            }
+
+            modeAbjadBtn.onclick = () => switchMode('alphabets');
+            modeAngkaBtn.onclick = () => switchMode('numbers');
+
+            // Set inisial mode
+            switchMode(appState.writing.currentMode);
+
+            // Sejarah Goresan untuk Fitur Undo
+            let strokeHistory = [];
+
+            function saveState() {
+                strokeHistory.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+                // Batasi history maksimal 20 agar memori tidak berat
+                if(strokeHistory.length > 20) strokeHistory.shift(); 
+            }
+
+            // Logika Menggambar
+            function startPosition(e) { 
+                saveState(); // Simpan state KANVAS sebelum goresan baru dibuat
+                painting = true; 
+                draw(e); 
+            }
+            function finishedPosition() { painting = false; ctx.beginPath(); }
+            function draw(e) {
+                if (!painting) return;
+                if(e.type === 'touchmove') e.preventDefault(); 
+
+                const rect = canvas.getBoundingClientRect();
+                let clientX, clientY;
+
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+                
+                ctx.lineWidth = 15;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#4E65C6'; // Warna tinta biru dari tema
+                
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            }
+
+            // Event Listeners untuk Mouse & Sentuhan (Touch)
+            canvas.addEventListener('mousedown', startPosition);
+            canvas.addEventListener('mouseup', finishedPosition);
+            canvas.addEventListener('mousemove', draw);
+            
+            canvas.addEventListener('touchstart', startPosition);
+            canvas.addEventListener('touchend', finishedPosition);
+            canvas.addEventListener('touchmove', draw);
+
+            // Tombol Kontrol
+            document.getElementById('btn-undo-canvas').onclick = () => {
+                if(strokeHistory.length > 0) {
+                    let prevState = strokeHistory.pop();
+                    ctx.putImageData(prevState, 0, 0);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+                document.getElementById('writing-feedback').classList.add('hidden');
+            };
+
+            document.getElementById('btn-clear-canvas').onclick = () => {
+                strokeHistory = []; // Reset history saat dihapus total
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                document.getElementById('writing-feedback').classList.add('hidden');
+            };
+            
+            nextBtn.onclick = () => {
+                const arr = appState.writing[appState.writing.currentMode];
+                appState.writing.currentIdx = (appState.writing.currentIdx + 1) % arr.length;
+                updateGuideText();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                document.getElementById('writing-feedback').classList.add('hidden');
+            };
+            
+            document.getElementById('btn-check-writing').onclick = checkWritingWithAI;
+        }
+
+        /* ==========================================================================
+           LOGIKA MODUL 3: MENGEJA (VISUAL SPASIAL)
+           ========================================================================== */
+
+        async function loadSpellingContent() {
+            const drop = document.getElementById('spelling-drop-zone'); 
+            const bank = document.getElementById('letter-bank'); 
+            const fb = document.getElementById('spelling-feedback');
+            
+            drop.innerHTML = ''; 
+            bank.innerHTML = ''; 
+            fb.innerHTML = '';
+            
+            const item = appState.spelling.words[Math.floor(Math.random() * appState.spelling.words.length)]; 
+            appState.spelling.currentWordObj = item;
+            
+            const imgContainer = document.getElementById('spelling-image-container'); 
+            const icon = imgContainer.querySelector('span'); 
+            const loader = document.getElementById('image-loader');
+            
+            imgContainer.querySelector('img')?.remove(); 
+            if(icon) {
+                icon.style.display = 'none'; 
+                // Reset styling jika sebelumnya diubah oleh fallback
+                icon.style.fontSize = ''; 
+            }
+            loader.classList.remove('hidden');
+            
+            // Menghasilkan Gambar dengan AI (atau gunakan fallback jika gagal/tanpa API)
+            try {
+                if (!API_KEY) throw new Error("API Key belum diatur, beralih ke gambar alternatif.");
+
+                const res = await fetch(IMAGE_API_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ instances: [{ prompt: item.imagePrompt }], parameters: { sampleCount: 1 } }) 
+                });
+                const data = await res.json();
+                
+                if (data.predictions?.[0]?.bytesBase64Encoded) { 
+                    const img = document.createElement('img'); 
+                    img.src = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`; 
+                    imgContainer.appendChild(img); 
+                } else {
+                    throw new Error("Gagal mengambil gambar dari AI");
+                }
+            } catch (e) { 
+                // Tampilkan gambar alternatif (Emoji besar) jika AI gagal
+                if(icon) { 
+                    icon.style.display = 'block'; 
+                    icon.style.fontSize = '5rem'; // Perbesar ukuran emoji
+                    icon.innerText = item.fallbackEmoji; 
+                } 
+            } finally { 
+                loader.classList.add('hidden'); 
+            }
+
+            // Membuat Kotak Huruf yang Diacak
+            item.word.toUpperCase().split('').sort(() => 0.5 - Math.random()).forEach((char, i) => {
+                const div = document.createElement('div'); 
+                div.className = 'letter-tile bg-white border border-gray-300 shadow-sm hover:shadow-md cursor-move'; 
+                div.innerText = char; 
+                div.draggable = true; 
+                div.id = `tile-${i}-${char}`;
+                
+                div.addEventListener('dragstart', (e) => { 
+                    e.dataTransfer.setData('text/plain', e.target.id); 
+                    setTimeout(() => div.classList.add('hidden'), 0); 
+                });
+                
+                div.addEventListener('dragend', () => div.classList.remove('hidden'));
+                
+                // Pindahkan saat di-klik (alternatif untuk perangkat sentuh jika drag gagal)
+                div.addEventListener('click', () => { 
+                    if (div.parentElement === bank) {
+                        drop.appendChild(div); 
+                    } else {
+                        bank.appendChild(div); 
+                    }
+                });
+                
+                bank.appendChild(div);
+            });
+        }
+
+        function setupSpelling() {
+            const drop = document.getElementById('spelling-drop-zone');
+            
+            // Audio Hint Button Listener
+            document.getElementById('btn-spell-listen').addEventListener('click', () => {
+                if(appState.spelling.currentWordObj) {
+                    const u = new SpeechSynthesisUtterance(appState.spelling.currentWordObj.word);
+                    u.lang = 'id-ID'; u.rate = 0.8;
+                    window.speechSynthesis.speak(u);
+                }
+            });
+
+            drop.addEventListener('dragover', (e) => e.preventDefault());
+            drop.addEventListener('drop', (e) => { 
+                e.preventDefault(); 
+                drop.appendChild(document.getElementById(e.dataTransfer.getData('text/plain'))); 
+            });
+            
+            document.getElementById('btn-check-spelling').addEventListener('click', () => {
+                const currentAnswer = Array.from(drop.children).map(c => c.innerText).join('');
+                if (currentAnswer === appState.spelling.currentWordObj.word.toUpperCase()) {
+                    playSound('correct');
+                    document.getElementById('spelling-feedback').innerHTML = `<span class="text-green-500 feedback-animation"><i class="fa-solid fa-check-circle"></i> Benar!</span>`; 
+                    appState.progress.spelling += 10; 
+                    saveProgress();
+                } else {
+                    playSound('wrong');
+                    document.getElementById('spelling-feedback').innerHTML = `<span class="text-red-400">Coba lagi...</span>`;
+                }
+            });
+            
+            document.getElementById('btn-next-spelling').addEventListener('click', loadSpellingContent);
+        }
+
+        /* ==========================================================================
+           LOGIKA MODUL 4: BERHITUNG (DISKALKULIA)
+           ========================================================================== */
+
+        async function generateMathStory() {
+            const btn = document.getElementById('btn-math-story');
+            const problem = appState.math.problems[appState.math.currentIndex];
+            const originalText = document.getElementById('math-text-question').innerText;
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Membuat...';
+            btn.disabled = true;
+
+            const prompt = `Buatkan soal cerita matematika yang sangat pendek dan sederhana (1 kalimat saja) untuk anak TK/SD kelas 1 berdasarkan operasi ini: ${problem.num1} ditambah ${problem.num2}. Gunakan objek yang menarik (misal buah, mainan, hewan). Bahasa Indonesia.`;
+            const story = await generateAIContent(prompt);
+            
+            if (story) {
+                document.getElementById('math-text-question').innerText = story.trim();
+                btn.innerHTML = '✨ Soal Baru';
+                setTimeout(() => { btn.disabled = false; btn.innerHTML = '✨ Buat Soal Cerita'; }, 3000);
+            } else {
+                document.getElementById('math-text-question').innerText = originalText;
+                btn.innerHTML = '❌ Gagal';
+                setTimeout(() => { btn.disabled = false; btn.innerHTML = '✨ Buat Soal Cerita'; }, 2000);
+            }
+        }
+
+        function loadMathProblem() {
+            const p = appState.math.problems[appState.math.currentIndex];
+            
+            document.getElementById('math-visual-1').innerHTML = Array(p.num1).fill(p.visual1).join('');
+            document.getElementById('math-visual-2').innerHTML = Array(p.num2).fill(p.visual2).join('');
+            document.getElementById('math-text-question').innerText = `Berapa jumlah ${p.name}?`; 
+            
+            const correctAns = p.num1 + p.num2;
+            const opts = document.getElementById('math-options'); 
+            opts.innerHTML = '';
+            
+            // Buat pilihan jawaban acak
+            let answers = [correctAns]; 
+            while(answers.length < 4) { 
+                let randomAns = Math.floor(Math.random() * 10) + 1; 
+                if(!answers.includes(randomAns)) answers.push(randomAns); 
+            }
+            
+            // Acak urutan dan buat tombol
+            answers.sort(() => 0.5 - Math.random()).forEach(ans => {
+                const btn = document.createElement('button'); 
+                btn.className = "w-full py-4 text-2xl font-bold bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl transition border border-purple-200"; 
+                btn.innerText = ans;
+                
+                btn.onclick = () => {
+                    if (ans === correctAns) {
+                        playSound('correct');
+                        btn.classList.replace('bg-purple-50', 'bg-green-500'); 
+                        btn.classList.replace('text-purple-700', 'text-white');
+                        document.getElementById('math-feedback').innerHTML = `<span class="text-green-500 feedback-animation">🎉 Benar!</span>`;
+                        
+                        appState.progress.math += 10; 
+                        saveProgress(); 
+                        
+                        setTimeout(() => { 
+                            appState.math.currentIndex = (appState.math.currentIndex + 1) % appState.math.problems.length; 
+                            loadMathProblem(); 
+                        }, 1500);
+                    } else { 
+                        playSound('wrong');
+                        btn.classList.replace('bg-purple-50', 'bg-red-200'); 
+                        document.getElementById('math-feedback').innerHTML = `<span>🤔 Coba lagi...</span>`; 
+                    }
+                };
+                opts.appendChild(btn);
+            });
+            
+            document.getElementById('math-feedback').innerHTML = '';
+        }
+
+        function setupMath() {
+            loadMathProblem();
+            document.getElementById('btn-math-story').onclick = generateMathStory;
+        }
+
+        async function generateProgressAdvice() {
+            const container = document.getElementById('ai-advice-container');
+            const textElem = document.getElementById('ai-advice-text');
+            
+            container.classList.remove('hidden');
+            textElem.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI sedang menganalisis nilaimu...';
+
+            const p = appState.progress;
+            const prompt = `Saya adalah asisten pendidikan untuk anak dengan kesulitan belajar. Berikut skor anak ini: Membaca ${p.reading} poin, Mengeja ${p.spelling} poin, Berhitung ${p.math} poin. Berikan 1 kalimat saran semangat yang pendek, ramah anak, dan memotivasi dalam Bahasa Indonesia.`;
+
+            const advice = await generateAIContent(prompt);
+            
+            if (advice) {
+                textElem.innerText = advice.trim();
+            } else {
+                textElem.innerText = "Teruslah belajar dan jangan menyerah! Kamu pasti bisa.";
+            }
+        }
+
+        /* ==========================================================================
+           INISIALISASI APLIKASI
+           ========================================================================== */
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProgress(); 
+            loadAccessibilitySettings(); 
+            setupReading(); 
+            setupSpelling(); 
+            setupMath(); 
+            setupProgressInteractions(); 
+            setupProfilePage(); 
+            
+            // Tampilkan Layar Utama
+            navigateTo('home-screen');
+        });
+
+    </script>
+</body>
+</html>
